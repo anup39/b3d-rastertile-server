@@ -1,0 +1,15 @@
+[Unit]
+Description=Gunicorn instance to serve Terracotta
+After=network.target
+
+[Service]
+User=anup
+Group=www-data
+WorkingDirectory=/home/anup/anup/outsource/b3d-rastertile-server
+Environment="PATH=/home/anup/anup/outsource/b3d-rastertile-server/venv/bin" 
+Environment="OPTIMIZED_PATH=/home/anup/b3d/code/b3d-backend/optimized/"
+ExecStart=/home/anup/anup/outsource/b3d-rastertile-server/venv/bin/gunicorn  \
+             --workers 3 --bind unix:b3d.sock -m 007 main:flask_app
+
+[Install]
+WantedBy=multi-user.target
