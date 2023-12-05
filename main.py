@@ -21,7 +21,9 @@ swagger = Swagger(flask_app)
 CORS(flask_app, resources={
     r"/tile/*": {"origins": "*"},
     r"/tile-async/*": {"origins": "*"},
+    r"/tile-async-wms/*": {"origins": "*"},
     r"/bounds/*": {"origins": "*"},
+  
 })
 
 
@@ -46,6 +48,15 @@ def get_tile(id , z , x, y):
 def get_tile_async(tile_z: int, tile_y: int, tile_x: int, keys: str = "") -> Response:
     tile_xyz = (tile_x, tile_y, tile_z)
     from utils.get_rgb_image import _get_rgb_image
+    return _get_rgb_image(keys, tile_xyz=tile_xyz)
+
+@TILE_API.route('/tile-async-wms/<path:keys>/<int:tile_z>/<int:tile_x>/<int:tile_y>.png')
+@swag_from('docs/get_tile_async.yml')
+def get_tile_async_wms(tile_z: int, tile_y: int, tile_x: int, keys: str = "") -> Response:
+    tile_xyz = (tile_x, tile_y, tile_z)
+    from utils.get_rgb_image import _get_rgb_image
+    import logging
+    logging.debug(tile_xyz,'tile xyz wms')
     return _get_rgb_image(keys, tile_xyz=tile_xyz)
 
 
