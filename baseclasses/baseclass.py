@@ -2,6 +2,7 @@ from typing import (
     Any,
     Optional,
     Sequence,
+    Tuple
 )
 from abc import ABC, abstractmethod
 
@@ -16,8 +17,7 @@ class RasterStore(ABC):
     def get_raster_tile(
         self,
         path: str,
-        *,
-        tile_bounds: Optional[Sequence[float]] = None,
+        tile_xyz: Optional[Tuple[int, int, int]] = None, 
         tile_size: Sequence[int] = (256, 256),
         preserve_values: bool = False,
         asynchronous: bool = False,

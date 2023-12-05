@@ -42,8 +42,7 @@ class DataDriver:
     def get_raster_tile(
         self,
         keys: ExtendedKeysType,
-        *,
-        tile_bounds: Optional[Sequence[float]] = None,
+        tile_xyz: Optional[Tuple[int, int, int]] = None,
         tile_size: Sequence[int] = (256, 256),
         preserve_values: bool = False,
         asynchronous: bool = False,
@@ -74,7 +73,7 @@ class DataDriver:
         path = path_source+keys[0]+"_"+keys[1]+".tif"
         return self.raster_store.get_raster_tile(
             path=path,
-            tile_bounds=tile_bounds,
+            tile_xyz=tile_xyz,
             tile_size=tile_size,
             preserve_values=preserve_values,
             asynchronous=asynchronous,

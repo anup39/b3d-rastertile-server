@@ -13,9 +13,7 @@ def get_tile_data(
     driver: DataDriver,
     keys: Union[Sequence[str], Mapping[str, str]],
     tile_xyz: Optional[Tuple[int, int, int]] = None,
-    *,
     tile_size: Tuple[int, int] = (256, 256),
-    bounds : Tuple[float, float,float,float] = (-107.88857386093643, 38.98669825130578, -107.8871274949119, 38.98772137392041),
     preserve_values: bool = False,
     asynchronous: bool = False,
 ) -> Any:
@@ -24,28 +22,15 @@ def get_tile_data(
         # read whole dataset
         return driver.get_raster_tile(
             keys,
+            tile_xyz=tile_xyz,
             tile_size=tile_size,
             preserve_values=preserve_values,
             asynchronous=asynchronous,
         )
 
-    # determine bounds for given tile
-    # wgs_bounds=transform_bounds(src.crs, 'EPSG:4326', *src.bounds)
-    wgs_bounds=bounds
-
-    tile_x, tile_y, tile_z = tile_xyz
-
-    if not tile_exists(wgs_bounds, tile_x, tile_y, tile_z):
-        raise exception.TileOutOfBoundsError(
-            f"Tile {tile_z}/{tile_x}/{tile_y} is outside image bounds"
-        )
-
-    mercator_tile = mercantile.Tile(x=tile_x, y=tile_y, z=tile_z)
-    target_bounds = mercantile.xy_bounds(mercator_tile)
-
     return driver.get_raster_tile(
         keys,
-        tile_bounds=target_bounds,
+        tile_xyz=tile_xyz,
         tile_size=tile_size,
         preserve_values=preserve_values,
         asynchronous=asynchronous,

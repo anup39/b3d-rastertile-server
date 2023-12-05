@@ -23,10 +23,8 @@ def rgb(
     some_keys: Sequence[str],
     rgb_values: Sequence[str],
     tile_xyz: Optional[Tuple[int, int, int]] = None,
-    *,
     stretch_ranges: Optional[ListOfRanges] = None,
     tile_size: Optional[Tuple[int, int]] = None,
-    bounds: Optional[Tuple[float, float,float,float]] = None,
 
 ) -> BinaryIO:
     """Return RGB image as PNG
@@ -77,7 +75,6 @@ def rgb(
             band_keys,
             tile_xyz=tile_xyz,
             tile_size=tile_size_,
-            bounds=bounds,
             asynchronous=True,
         )
 

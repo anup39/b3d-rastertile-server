@@ -102,8 +102,7 @@ class GeoTiffRasterStore(RasterStore):
     def get_raster_tile(
         self,
         path: str,
-        *,
-        tile_bounds: Optional[Sequence[float]] = None,
+        tile_xyz: Optional[Tuple[int, int, int]] = None,
         tile_size: Optional[Sequence[int]] = None,
         preserve_values: bool = False,
         asynchronous: bool = False
@@ -118,7 +117,7 @@ class GeoTiffRasterStore(RasterStore):
 
         kwargs = dict(
             path=path,
-            tile_bounds=tile_bounds,
+            tile_xyz=tile_xyz,
             tile_size=tuple(tile_size),
             preserve_values=preserve_values,
             reprojection_method=REPROJECTION_METHOD,

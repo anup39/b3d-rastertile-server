@@ -1,6 +1,9 @@
-from typing import Optional, Any, Dict, Tuple, TYPE_CHECKING
+from typing import Optional, Any, Dict, Tuple, TYPE_CHECKING, Sequence
 from utils.profile import trace
 from exceptions import exception
+import mercantile
+
+
 
 import contextlib
 import numpy as np
@@ -9,6 +12,14 @@ import warnings
 
 if TYPE_CHECKING:  # pragma: no cover
     from rasterio.io import DatasetReader  # noqa: F401
+
+
+def tile_exists(bounds: Sequence[float], tile_x: int, tile_y: int, tile_z: int) -> bool:
+    """Check if an XYZ tile is inside the given physical bounds."""
+    mintile = mercantile.tile(bounds[0], bounds[3], tile_z)
+    maxtile = mercantile.tile(bounds[2], bounds[1], tile_z)
+
+    return mintile.x <= tile_x <= maxtile.x and mintile.y <= tile_y <= maxtile.y    
 
 def get_resampling_enum(method: str) -> Any:
     from rasterio.enums import Resampling
@@ -39,10 +50,9 @@ def has_alpha_band(src: "DatasetReader") -> bool:
 @trace("get_raster_tile")
 def get_raster_tile(
     path: str,
-    *,
+    tile_xyz: Optional[Tuple[int, int, int]] = None,
     reprojection_method: str = "nearest",
     resampling_method: str = "nearest",
-    tile_bounds: Optional[Tuple[float, float, float, float]] = None,
     tile_size: Tuple[int, int] = (256, 256),
     preserve_values: bool = False,
     target_crs: str = "epsg:3857",
@@ -75,6 +85,22 @@ def get_raster_tile(
                 src = es.enter_context(rasterio.open(path))
         except OSError:
             raise IOError("error while reading file {}".format(path))
+
+
+        # determine bounds for given tile
+        wgs_bounds=warp.transform_bounds(src.crs, 'EPSG:4326', *src.bounds)
+        # wgs_bounds=bounds
+
+        tile_x, tile_y, tile_z = tile_xyz
+
+        if not tile_exists(wgs_bounds, tile_x, tile_y, tile_z):
+            raise exception.TileOutOfBoundsError(
+                f"Tile {tile_z}/{tile_x}/{tile_y} is outside image bounds"
+            )
+
+        mercator_tile = mercantile.Tile(x=tile_x, y=tile_y, z=tile_z)
+        tile_bounds = mercantile.xy_bounds(mercator_tile)
+
 
         # compute buonds in target CRS
         dst_bounds = warp.transform_bounds(src.crs, target_crs, *src.bounds)
