@@ -1,5 +1,5 @@
 import os ,copy
-from flask import Flask ,send_file, Response, jsonify, Blueprint 
+from flask import Flask ,send_file, Response, jsonify, Blueprint  ,render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
 from exceptions import errorhandler
@@ -43,6 +43,7 @@ def get_tile(id , z , x, y):
     return send_file(image, mimetype="image/png")
 
 
+
 @TILE_API.route('/tile-async/<path:keys>/<int:tile_z>/<int:tile_x>/<int:tile_y>.png')
 @swag_from('docs/get_tile_async.yml')
 def get_tile_async(tile_z: int, tile_y: int, tile_x: int, keys: str = "") -> Response:
@@ -50,14 +51,31 @@ def get_tile_async(tile_z: int, tile_y: int, tile_x: int, keys: str = "") -> Res
     from utils.get_rgb_image import _get_rgb_image
     return _get_rgb_image(keys, tile_xyz=tile_xyz)
 
-# @TILE_API.route('/wmts')
-# # @swag_from('docs/get_tile_async.yml')
-# def get_tile_async_wms(tile_z: int, tile_y: int, tile_x: int, keys: str = "") -> Response:
-#     tile_xyz = (277027, 161315, 19)
-#     from utils.get_rgb_image import _get_rgb_image
-#     import logging
-#     logging.debug(tile_xyz,'tile xyz wms')
-#     return _get_rgb_image(keys, tile_xyz=tile_xyz)
+
+@TILE_API.route('/<path:keys>/WebMercatorQuad/<int:TileMatrix>/<int:TileRow>/<int:TileCol>.png')
+@swag_from('docs/get_tile_async.yml')
+def get_tile_async_wmts(TileMatrix: int, TileRow: int, TileCol: int, keys: str = "") -> Response:
+    tile_xyz = (TileRow,TileCol,TileMatrix)
+    from utils.get_rgb_image import _get_rgb_image
+    return _get_rgb_image(keys, tile_xyz=tile_xyz)
+
+
+
+@TILE_API.route('<path:layer>/ows/')
+# @swag_from('docs/get_tile_async.yml')
+def get_tile_async_wms(layer:str='') -> Response:
+    try:
+        from utils.createbbox import createbbox
+        optimized_path = os.getenv("OPTIMIZED_PATH")
+        tiff_file = f"{optimized_path}{layer}_red.tif"
+        title = str(optimized_path)
+        abstract = f"WMTS services provided by B3d for Orthophoto {layer}"
+        bounds = createbbox(tiff_file)    
+        xml_content = render_template('wmts.xml',title = title, abstract=abstract, layer=layer ,bounds=bounds)
+        # Return the XML content with the appropriate content type
+        return Response(xml_content, mimetype='text/xml')
+    except FileNotFoundError:
+        return 'WMTS XML file not found', 404
 
 
 
