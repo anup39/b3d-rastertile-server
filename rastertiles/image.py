@@ -13,11 +13,13 @@ from PIL import Image
 
 from utils.profile import trace
 from settings.setting import get_settings
+from exceptions import exception
 
 Number = TypeVar("Number", int, float)
 RGBA = Tuple[Number, Number, Number, Number]
 Palette = Sequence[RGBA]
 Array = Union[np.ndarray, np.ma.MaskedArray]
+from .get_cmaps import get_cmap
 
 
 @trace("array_to_png")
@@ -39,7 +41,14 @@ def array_to_png(
 
         mode = "RGB"
         transparency = (0, 0, 0)
-        palette = None      
+        palette = None 
+    
+    elif img_data.ndim == 2:  # encode paletted image
+        
+        mode = "L"
+        palette = None
+        transparency = 0
+    
     else:
         raise ValueError("Input array must have 3 dimensions")
 
@@ -49,7 +58,7 @@ def array_to_png(
     img = Image.fromarray(img_data, mode=mode)
 
     if palette is not None:
-        img.putpalette(palette)
+        img.putpalette([c for color in palette for c in color])
 
     sio = BytesIO()
     img.save(sio, "png", compress_level=compress_level, transparency=transparency)

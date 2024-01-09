@@ -52,6 +52,14 @@ def get_tile_async(tile_z: int, tile_y: int, tile_x: int, keys: str = "") -> Res
     return _get_rgb_image(keys, tile_xyz=tile_xyz)
 
 
+@TILE_API.route('/tile-singleband-async/<path:keys>/<path:band>/<path:colormap>/<int:tile_z>/<int:tile_x>/<int:tile_y>.png')
+@swag_from('docs/get_tile_async.yml')
+def get_singleband_tile_async(tile_z: int, tile_y: int, tile_x: int, keys: str = "",band: str = "",colormap: str = "" ) -> Response:
+    tile_xyz = (tile_x, tile_y, tile_z)
+    from utils.get_singleband_image import _get_singleband_image
+    return _get_singleband_image(keys, band, colormap, tile_xyz=tile_xyz)
+
+
 @TILE_API.route('/<path:keys>/WebMercatorQuad/<int:TileMatrix>/<int:TileRow>/<int:TileCol>.png')
 @swag_from('docs/get_tile_async.yml')
 def get_tile_async_wmts(TileMatrix: int, TileRow: int, TileCol: int, keys: str = "") -> Response:
