@@ -71,6 +71,7 @@ class DataDriver:
         """
         path_source =  os.getenv("OPTIMIZED_PATH")
         path = path_source+keys[0]+"_"+keys[1]+".tif"
+        print(path)
         return self.raster_store.get_raster_tile(
             path=path,
             tile_xyz=tile_xyz,

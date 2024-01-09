@@ -18,6 +18,8 @@ def get_tile_data(
     asynchronous: bool = False,
 ) -> Any:
     """Retrieve raster image from key_names for given XYZ tile and keys"""
+
+    print(keys, 'keys')
     if tile_xyz is None:
         # read whole dataset
         return driver.get_raster_tile(
