@@ -30,7 +30,7 @@
                 <TileMatrixSet>http://www.opengis.net/def/crs/EPSG/0/3857</TileMatrixSet>
             </TileMatrixSetLink>
             <ResourceURL format="image/png"
-                         template="https://tile.b3d.dk/{{layer}}/WebMercatorQuad/{TileMatrix}/{TileCol}/{TileRow}.png"
+                         template="http://tileb3d.duckdns.org/{{layer}}/WebMercatorQuad/{TileMatrix}/{TileCol}/{TileRow}.png"
                          resourceType="tile"/>
         </Layer>
 
