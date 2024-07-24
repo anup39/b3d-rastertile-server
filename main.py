@@ -1,5 +1,6 @@
-import os ,copy
-from flask import Flask ,send_file, Response, jsonify, Blueprint  ,render_template
+import os
+import copy
+from flask import Flask, send_file, Response, jsonify, Blueprint, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
 from exceptions import errorhandler
@@ -17,31 +18,31 @@ errorhandler._setup_error_handlers(flask_app)
 swagger = Swagger(flask_app)
 
 
-#handle Cors
+# handle Cors
 CORS(flask_app, resources={
     r"/tile/*": {"origins": "*"},
     r"/tile-async/*": {"origins": "*"},
     r"/tile-async-wms/*": {"origins": "*"},
     r"/bounds/*": {"origins": "*"},
-  
+
 })
 
 
 @TILE_API.route('/tile/<path:id>/<int:z>/<int:x>/<int:y>.png')
 @swag_from('docs/get_tile.yml')
-def get_tile(id , z , x, y):
+def get_tile(id, z, x, y):
 
     from utils.generate_image import generate_image
     optimized_path = os.getenv("OPTIMIZED_PATH")
-    tiff_files = [f"{optimized_path}{id}_red.tif", f"{optimized_path}{id}_green.tif", f"{optimized_path}{id}_blue.tif"]
+    tiff_files = [f"{optimized_path}{id}_red.tif", f"{optimized_path}{
+        id}_green.tif", f"{optimized_path}{id}_blue.tif"]
 
-    def generate_image_async(tiff_files, id , z , x, y):
-        return generate_image(tiff_files,id , z , x, y)
-    
-    futures = generate_image_async(tiff_files, id , z , x, y) 
+    def generate_image_async(tiff_files, id, z, x, y):
+        return generate_image(tiff_files, id, z, x, y)
+
+    futures = generate_image_async(tiff_files, id, z, x, y)
     image = futures
     return send_file(image, mimetype="image/png")
-
 
 
 @TILE_API.route('/tile-async/<path:keys>/<int:tile_z>/<int:tile_x>/<int:tile_y>.png')
@@ -54,7 +55,7 @@ def get_tile_async(tile_z: int, tile_y: int, tile_x: int, keys: str = "") -> Res
 
 @TILE_API.route('/tile-singleband-async/<path:keys>/<path:band>/<path:colormap>/<int:tile_z>/<int:tile_x>/<int:tile_y>.png')
 @swag_from('docs/get_tile_async.yml')
-def get_singleband_tile_async(tile_z: int, tile_y: int, tile_x: int, keys: str = "",band: str = "",colormap: str = "" ) -> Response:
+def get_singleband_tile_async(tile_z: int, tile_y: int, tile_x: int, keys: str = "", band: str = "", colormap: str = "") -> Response:
     tile_xyz = (tile_x, tile_y, tile_z)
     from utils.get_singleband_image import _get_singleband_image
     return _get_singleband_image(keys, band, colormap, tile_xyz=tile_xyz)
@@ -63,51 +64,45 @@ def get_singleband_tile_async(tile_z: int, tile_y: int, tile_x: int, keys: str =
 @TILE_API.route('/<path:keys>/WebMercatorQuad/<int:TileMatrix>/<int:TileRow>/<int:TileCol>.png')
 @swag_from('docs/get_tile_async.yml')
 def get_tile_async_wmts(TileMatrix: int, TileRow: int, TileCol: int, keys: str = "") -> Response:
-    tile_xyz = (TileRow,TileCol,TileMatrix)
+    tile_xyz = (TileRow, TileCol, TileMatrix)
     from utils.get_rgb_image import _get_rgb_image
     return _get_rgb_image(keys, tile_xyz=tile_xyz)
 
 
-
 @TILE_API.route('<path:layer>/ows/')
 # @swag_from('docs/get_tile_async.yml')
-def get_tile_async_wms(layer:str='') -> Response:
+def get_tile_async_wms(layer: str = '') -> Response:
     try:
         from utils.createbbox import createbbox
         optimized_path = os.getenv("OPTIMIZED_PATH")
         tiff_file = f"{optimized_path}{layer}_red.tif"
         title = str(optimized_path)
         abstract = f"WMTS services provided by B3d for Orthophoto {layer}"
-        bounds = createbbox(tiff_file)    
-        xml_content = render_template('wmts.xml',title = title, abstract=abstract, layer=layer ,bounds=bounds)
+        bounds = createbbox(tiff_file)
+        xml_content = render_template(
+            'wmts.xml', title=title, abstract=abstract, layer=layer, bounds=bounds)
         # Return the XML content with the appropriate content type
         return Response(xml_content, mimetype='text/xml')
     except FileNotFoundError:
         return 'WMTS XML file not found', 404
 
 
-
-@TILE_API.route('/bounds/<path:id>',methods=["GET"])
+@TILE_API.route('/bounds/<path:id>', methods=["GET"])
 @swag_from('docs/get_bounds.yml')
 def get_bounds(id):
     try:
         from utils.createbbox import createbbox
+        print(id, 'id')
         optimized_path = os.getenv("OPTIMIZED_PATH")
-        tiff_file = f"{optimized_path}{id}_red.tif"
+        tiff_file = f"{optimized_path}/{id}_red.tif"
+        print(tiff_file, 'tiff_file')
         bounds = createbbox(tiff_file)
         if bounds:
-            return jsonify({"bounds":bounds})
+            return jsonify({"bounds": bounds})
     except:
-        return jsonify({"message":"File not found"})
-    
-    
+        return jsonify({"message": "File not found"})
+
 
 # extensions might modify the global blueprints, so copy before use
-new_tile_api = copy.deepcopy(TILE_API)    
+new_tile_api = copy.deepcopy(TILE_API)
 flask_app.register_blueprint(new_tile_api, url_prefix="/")
-
-
-
-
-
-
