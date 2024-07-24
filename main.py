@@ -37,10 +37,24 @@ def get_tile(id, z, x, y):
     tiff_files = [f"{optimized_path}{id}_red.tif", f"{optimized_path}{
         id}_green.tif", f"{optimized_path}{id}_blue.tif"]
 
-    def generate_image_async(tiff_files, id, z, x, y):
-        return generate_image(tiff_files, id, z, x, y)
+    futures = generate_image(tiff_files, id, z, x, y)
+    image = futures
+    return send_file(image, mimetype="image/png")
 
-    futures = generate_image_async(tiff_files, id, z, x, y)
+
+@TILE_API.route('/<path:keys>/WebMercatorQuad/<int:TileMatrix>/<int:TileRow>/<int:TileCol>.png')
+@swag_from('docs/get_tile_async.yml')
+def get_tile_async_wmts(TileMatrix: int, TileRow: int, TileCol: int, keys: str = "") -> Response:
+    id = keys
+    z = TileMatrix
+    x = TileCol
+    y = TileRow
+    from utils.generate_image import generate_image
+    optimized_path = os.getenv("OPTIMIZED_PATH")
+    tiff_files = [f"{optimized_path}{id}_red.tif", f"{optimized_path}{
+        id}_green.tif", f"{optimized_path}{id}_blue.tif"]
+
+    futures = generate_image(tiff_files, id, z, x, y)
     image = futures
     return send_file(image, mimetype="image/png")
 
@@ -59,14 +73,6 @@ def get_singleband_tile_async(tile_z: int, tile_y: int, tile_x: int, keys: str =
     tile_xyz = (tile_x, tile_y, tile_z)
     from utils.get_singleband_image import _get_singleband_image
     return _get_singleband_image(keys, band, colormap, tile_xyz=tile_xyz)
-
-
-@TILE_API.route('/<path:keys>/WebMercatorQuad/<int:TileMatrix>/<int:TileRow>/<int:TileCol>.png')
-@swag_from('docs/get_tile_async.yml')
-def get_tile_async_wmts(TileMatrix: int, TileRow: int, TileCol: int, keys: str = "") -> Response:
-    tile_xyz = (TileRow, TileCol, TileMatrix)
-    from utils.get_rgb_image import _get_rgb_image
-    return _get_rgb_image(keys, tile_xyz=tile_xyz)
 
 
 @TILE_API.route('<path:layer>/ows/')
