@@ -83,10 +83,11 @@ def get_tile_async_wms(layer: str = '') -> Response:
         optimized_path = os.getenv("OPTIMIZED_PATH")
         tiff_file = f"{optimized_path}{layer}_red.tif"
         title = str(optimized_path)
-        abstract = f"WMTS services provided by B3d for Orthophoto {layer}"
+        abstract = f"WMTS services provided by B3D for Orthophoto {layer}"
         bounds = createbbox(tiff_file)
+        base_url = os.getenv("BASE_URL")
         xml_content = render_template(
-            'wmts.xml', title=title, abstract=abstract, layer=layer, bounds=bounds)
+            'wmts.xml', title=title, abstract=abstract, layer=layer, bounds=bounds, base_url=base_url)
         # Return the XML content with the appropriate content type
         return Response(xml_content, mimetype='text/xml')
     except FileNotFoundError:
