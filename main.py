@@ -24,7 +24,7 @@ CORS(flask_app, resources={
     r"/tile-async/*": {"origins": "*"},
     r"/tile-async-wms/*": {"origins": "*"},
     r"/bounds/*": {"origins": "*"},
-
+    r"/*": {"origins": "*"},
 })
 
 
@@ -42,9 +42,9 @@ def get_tile(id, z, x, y):
     return send_file(image, mimetype="image/png")
 
 
-@TILE_API.route('/<path:keys>/WebMercatorQuad/<int:TileMatrix>/<int:TileRow>/<int:TileCol>.png')
-@swag_from('docs/get_tile_async.yml')
-def get_tile_async_wmts(TileMatrix: int, TileRow: int, TileCol: int, keys: str = "") -> Response:
+@TILE_API.route('/<path:keys>/<path:TileMatrixSet>/<int:TileMatrix>/<int:TileRow>/<int:TileCol>.png')
+def get_tile_async_wmts(TileMatrix: int, TileRow: int, TileCol: int, keys: str = "", TileMatrixSet: str = "") -> Response:
+    print(keys, TileMatrix, TileRow, TileCol, TileMatrixSet)
     id = keys
     z = TileMatrix
     x = TileCol
