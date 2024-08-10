@@ -20,11 +20,12 @@ swagger = Swagger(flask_app)
 
 # handle Cors
 CORS(flask_app, resources={
-    r"/tile/*": {"origins": "*"},
-    r"/tile-async/*": {"origins": "*"},
-    r"/tile-async-wms/*": {"origins": "*"},
-    r"/bounds/*": {"origins": "*"},
     r"/*": {"origins": "*"},
+    # r"/tile/*": {"origins": "*"},
+    # r"/tile-async/*": {"origins": "*"},
+    # r"/tile-async-wms/*": {"origins": "*"},
+    # r"/bounds/*": {"origins": "*"},
+
 })
 
 
@@ -43,8 +44,9 @@ def get_tile(id, z, x, y):
 
 
 @TILE_API.route('/<path:keys>/<path:TileMatrixSet>/<int:TileMatrix>/<int:TileRow>/<int:TileCol>.png')
+@swag_from('docs/get_tile_wmts.yml')
 def get_tile_async_wmts(TileMatrix: int, TileRow: int, TileCol: int, keys: str = "", TileMatrixSet: str = "") -> Response:
-    print(keys, TileMatrix, TileRow, TileCol, TileMatrixSet)
+    # print(keys, TileMatrix, TileRow, TileCol, TileMatrixSet)
     id = keys
     z = TileMatrix
     x = TileCol
