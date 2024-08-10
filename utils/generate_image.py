@@ -8,6 +8,7 @@ from rasterio.enums import Resampling, MaskFlags, ColorInterp
 import numpy as np
 from PIL import Image
 from io import BytesIO
+from pyproj import Transformer
 
 
 class TileOutOfBoundsError(Exception):
@@ -110,12 +111,23 @@ def array_to_png(img_data, colormap=None):
 
 
 def generate_image(tiff_files, id, z, x, y):
-    target_crs = 'EPSG:4326'
+    print(tiff_files, id, z, x, y)
+    target_crs = 'EPSG:25832'
     reprojection_method = "nearest"
     resampling_method = "nearest"
     tile_size = (256, 256)
     mercator_tile = mercantile.Tile(x=x, y=y, z=z)
     target_bounds = mercantile.xy_bounds(mercator_tile)
+
+    # Define the transformer from EPSG:3857 to EPSG:25832
+    transformer = Transformer.from_crs(
+        "EPSG:3857", "EPSG:25832", always_xy=True)
+    min_x, min_y = transformer.transform(
+        target_bounds.left, target_bounds.bottom)
+    max_x, max_y = transformer.transform(
+        target_bounds.right, target_bounds.top)
+    target_bounds = (min_x, min_y, max_x, max_y)
+
     reproject_enum = get_resampling_enum(reprojection_method)
     resampling_enum = get_resampling_enum(resampling_method)
     # pad tile bounds to prevent interpolation artefacts
