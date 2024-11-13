@@ -20,7 +20,7 @@ This project is a custom raster tile engine built with Python, Flask, GDAL, and 
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/anup39/b3d-rastertile-server
+   git clone https://github.com/anup39/b3d-rastertile-server.git
    cd b3d-rastertile-server
 
    pip install -r requirements.txt
