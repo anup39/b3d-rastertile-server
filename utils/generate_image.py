@@ -112,7 +112,7 @@ def array_to_png(img_data, colormap=None):
 
 def generate_image(tiff_files, id, z, x, y):
     print(tiff_files, id, z, x, y)
-    target_crs = 'EPSG:25832'
+    target_crs = 'EPSG:3857'
     reprojection_method = "nearest"
     resampling_method = "nearest"
     tile_size = (256, 256)
