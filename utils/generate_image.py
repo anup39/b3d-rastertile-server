@@ -121,7 +121,7 @@ def generate_image(tiff_files, id, z, x, y):
 
     # Define the transformer from EPSG:3857 to EPSG:25832
     transformer = Transformer.from_crs(
-        "EPSG:3857", "EPSG:25832", always_xy=True)
+        "EPSG:3857", "EPSG:3857", always_xy=True)
     min_x, min_y = transformer.transform(
         target_bounds.left, target_bounds.bottom)
     max_x, max_y = transformer.transform(
